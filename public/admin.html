@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<style>
+		* {
+			box-sizing: border-box;
+			padding: 0;
+			margin: 0;
+		}
+	
+		.add-form {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			padding: 0.5rem;
+		}
+		.add-form input, .add-form button {
+			max-width: 300px;
+			padding: 0.5rem;
+		}
+	</style>
+	<header>
+		<h1>Admin Page</h1>
+	</header>
+	<main>
+		<div class="add-form">
+				<h3>Create A Product</h3>
+				<input type="text" placeholder="Product Name" name="name">
+				<input type="number" placeholder="Product Stock" name="stock">
+				<input type="number" placeholder="Product Price" name="price">
+				<input type="text" placeholder="Product Description" name="description">
+				<input type="text" placeholder="Product Image" name="image">
+				<button id="add-btn">ADD PRODUCT</button>
+		</div>
+		<div class="product-list"></div>
+	</main>
+	<script>
+		const products = [];
+
+		// view related functions
+		const displayAllProducts = () => {
+			const allProductItemsHTML = products.map(product => {
+				return `
+					<div class="product-item">
+						<img class="image" src="/images/${product.image}" height="150px" width="150px">
+						<div class="name">${product.name}</div>
+						<div class="stock">${product.stock}</div>
+						<div class="price">Rs. ${product.price}</div>
+						<div class="description">${product.description}</div>
+					</div>
+				`
+			})
+			const html = allProductItemsHTML.join("");
+			document.querySelector(".product-list").innerHTML = html;
+		}
+
+		// api related functions 
+		const fetchAllProducts = () => {
+			return (
+				fetch('http://localhost:3000/products')
+				.then(response => {
+					const p = response.json()
+					return p
+				})
+				.then(productsFromServer => {
+					productsFromServer.forEach(p => products.push(p));
+				})
+			)
+		}
+
+		const addProduct = (product) => {
+			return fetch('http://localhost:3000/products', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(product)
+			}).then(response => {
+					const p = response.json()
+					return p
+				})
+				.then(newProduct => {
+					products.push(newProduct);
+				})
+		}
+
+		// event listeners
+		const onAddClick = () => {
+			const product = {};
+			document.querySelectorAll('.add-form input')
+				.forEach(inpEl => {
+					product[inpEl.getAttribute("name")] = inpEl.value;
+				})
+			addProduct(product)
+				.then(() => {
+					displayAllProducts()
+					document.querySelectorAll('.add-form input')
+						.forEach(inpEl => {
+							inpEl.value = "";
+						})
+				})
+				.catch(e => {
+					alert("Could not add product");
+					console.error(e);
+				})
+		}
+
+		const onDocumentLoad = () => {
+			fetchAllProducts()
+			.then( () => displayAllProducts())
+			.catch( (e) => {
+				alert("Could not load products")
+				console.error(e);
+			})
+		}
+		// attach event listeners
+		document.getElementById("add-btn").addEventListener("click", onAddClick);
+		document.body.onload = onDocumentLoad
+	</script>
+</body>
+</html>
