@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My_cart</title>
+</head>
+<body>
+    <header>
+        <h2>My Cart🛒</h2>
+    </header>
+    <main>
+        <div class="product"></div>
+    </main>
+    <script>
+        const ProductToBeModified=[];
+        const urlQuery= new URLSearchParams(window.location.search);
+        const id= urlQuery.get('id');
+
+        const displayAllProducts = () => {
+			const ProductHTML = ProductToBeModified.map(product => {
+				return `
+					<div class="product-item">
+						<img class="image" src="/images/${product.image}" height="250px" width="250px">
+						<div class="name">${product.name}</div>
+						<div class="stock">Stock: ${product.stock}</div>
+						<div class="price">Rs. ${product.price}</div>
+						<div class="description">${product.description}</div>
+						<div>
+                            <a href="buy.html?id=${product.id}">
+                                <button>Buy</button>
+                            </a>
+                        </div>
+					</div>
+				`
+			})
+			const html = ProductHTML.join("");
+			document.querySelector(".product").innerHTML = html;
+		}
+
+        fetch(`http://localhost:3000/products/${id}`)
+            .then((Response)=>Response.json())
+                .then((RequiredProduct)=>{
+                    console.log(RequiredProduct);
+                    ProductToBeModified.push(RequiredProduct);
+                }).then(()=>displayAllProducts())
+
+    </script>
+</body>
+</html>

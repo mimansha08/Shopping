@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout_page</title>
+    <style>
+        body{
+            background-color:  rgba(227, 104, 124, 0.734);
+        }
+
+        .Purchased{
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .message{
+            
+            width: 300px;
+            text-align: center;
+            font-size: 3rem;
+        }
+        .emoji{
+           height: 100px;
+           width: 100px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="Purchased">
+        <div class="message"></div>
+       <img class="emoji" src="/images/download.png">
+    </div>
+    <script>
+        const ProductToBeModified=[];
+        const urlQuery= new URLSearchParams(window.location.search);
+        const id= urlQuery.get('id');
+
+       fetch(`http://localhost:3000/products/${id}`)
+            .then((Response)=>Response.json())
+                .then((RequiredProduct)=>{
+                    console.log(RequiredProduct);
+                    RequiredProduct.stock= (RequiredProduct.stock) -1;
+                    ProductToBeModified.push(RequiredProduct);
+                }).then(()=>{
+                    return fetch(`http://localhost:3000/products/${id}`,{
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(ProductToBeModified[0])
+                    })
+                }).then((response)=>{
+                        document.querySelector(".message").innerHTML="Successfully Purchased";
+                    })
+        
+        
+       
+               
+
+   </script>
+</body>
+</html>

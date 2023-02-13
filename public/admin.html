@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+			box-sizing: border-box;
+			padding: 0;
+			margin: 0;
+		}
+	
+		.main {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			padding: 0.5rem;
+		}
+		.main input, .main button {
+			max-width: 300px;
+			padding: 0.5rem;
+		}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Create Product</h1>
+    </header>
+    <main>
+            <div class="main">
+                <h2>Add Product</h2>
+                <input type="text" placeholder="Product-name" name="name">
+                <input type="number" placeholder="stock" name="stock">
+                <input type="number" placeholder="price" name="price">
+                <input type="text" placeholder="description" name="description">
+                <input type="text" placeholder="Product Image" name="image">
+                <button id="btn">Add Product</button>
+            </div>
+            <div class="product-list"></div>
+    </main>
+
+    <script>
+        const productValues={};
+        const products=[];
+
+        const displayAllProducts=()=>{
+            const gethtml=(product)=>{
+                return `
+                    <div class="product-item">
+						<img class="image" src="/images/${product.image}" height="150px" width="150px">
+						<div class="name">${product.name}</div>
+						<div class="stock">${product.stock}</div>
+						<div class="price">Rs. ${product.price}</div>
+						<div class="description">${product.description}</div>
+                        
+					</div>
+                `
+            }
+            const productHtmls=products.map((product)=>gethtml(product));
+            const html=productHtmls.join("");
+            document.querySelector(".product-list").innerHTML=html;
+        }
+
+        const fetchAllproducts=()=>{
+            return fetch('http://localhost:3000/products')
+                .then((response)=>response.json())
+                    .then((productsFromServer)=>{
+                        productsFromServer.forEach((product)=>products.push(product))
+                    })
+        }
+
+
+        const addProduct = (productValues) => {
+			return  fetch('http://localhost:3000/products', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(productValues)
+			}).then((response)=>{
+               return response.json();
+            }).then((newProduct)=>{
+                products.push(newProduct);
+            })
+		}
+
+        const onClickAdd=()=>{
+            document.querySelectorAll(".main input")
+                .forEach((inputEl)=>{
+                    productValues[inputEl.getAttribute("name")]=inputEl.value;
+                })
+            
+                addProduct(productValues)
+				.then(() => {
+					displayAllProducts()
+					document.querySelectorAll('.main input')
+						.forEach(inpEl => {
+							inpEl.value = "";
+						})
+				})
+				.catch(e => {
+					alert("Could not add product");
+					console.error(e);
+				})
+            
+               
+                
+        }
+        document.getElementById("btn").addEventListener("click",onClickAdd);
+
+        const onDocumentLoad = () => {
+			fetchAllproducts()
+			.then( () => displayAllProducts())
+			.catch( (e) => {
+				alert("Could not load products");
+				console.error(e);
+			})
+		}
+
+		document.body.onload = onDocumentLoad
+    </script>
+</body>
+</html>
